@@ -21,6 +21,10 @@ import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
  * how to use it.
  */
 export default class EditorWatchdog extends Watchdog {
+	private _editor: any;
+	private _throttledSave: any;
+	private _destructor: any;
+
 	/**
 	 * @param {module:watchdog/watchdog~WatchdogConfig} [config] The watchdog plugin configuration.
 	 */

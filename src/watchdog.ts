@@ -9,6 +9,14 @@
 
 /* globals window */
 
+class Observable<EventNames> {
+	set<T extends keyof this>(propName: T, value: this[ T ] ) {
+		this[ propName ] = value;
+	}
+	fire( eventName: EventNames, data: any ) {}
+	on( eventName: EventNames, callback: ( ) => void ) {}
+}
+
 import mix from '@ckeditor/ckeditor5-utils/src/mix';
 import ObservableMixin from '@ckeditor/ckeditor5-utils/src/observablemixin';
 
@@ -20,11 +28,29 @@ import ObservableMixin from '@ckeditor/ckeditor5-utils/src/observablemixin';
  * @private
  * @abstract
  */
-export default class Watchdog {
+export default class Watchdog extends Observable<'error'|'restart'> {
+	/**
+	 * Specifies the state of the editor handled by the watchdog. The state can be one of the following values:
+	 *
+	 * * `initializing` - before the first initialization, and after crashes, before the editor is ready,
+	 * * `ready` - a state when a user can interact with the editor,
+	 * * `crashed` - a state when an error occurs - it quickly changes to `initializing` or `crashedPermanently`
+	 * depending on how many and how frequency errors have been caught recently,
+	 * * `crashedPermanently` - a state when the watchdog stops reacting to errors and keeps the editor crashed,
+	 * * `destroyed` - a state when the editor is manually destroyed by the user after calling `watchdog.destroy()`
+	 *
+	 * @public
+	 * @observable
+	 * @member {'initializing'|'ready'|'crashed'|'crashedPermanently'|'destroyed'} #state
+	 */
+	public state: 'initializing' | 'ready' | 'crashed' | 'crashedPermanently' | 'destroyed';
+
 	/**
 	 * @param {module:watchdog/watchdog~WatchdogConfig} [config] The watchdog plugin configuration.
 	 */
 	constructor( config = {} ) {
+		super();
+
 		/**
 		 * An array of crashes saved as an object with the following properties:
 		 *
